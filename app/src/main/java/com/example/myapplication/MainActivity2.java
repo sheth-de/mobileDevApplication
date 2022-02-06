@@ -9,6 +9,11 @@ import android.widget.TextView;
 
 public class MainActivity2 extends AppCompatActivity {
     Button A;
+    Button B;
+    Button C;
+    Button D;
+    Button E;
+    Button F;
     TextView message;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +25,41 @@ public class MainActivity2 extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 message.setText("Pressed: A");
+            }
+        });
+        B = findViewById(R.id.buttonB);
+        B.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                message.setText("Pressed: B");
+            }
+        });
+        C = findViewById(R.id.buttonC);
+        C.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                message.setText("Pressed: C");
+            }
+        });
+        D = findViewById(R.id.buttonD);
+        D.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                message.setText("Pressed: D");
+            }
+        });
+        E = findViewById(R.id.buttonE);
+        E.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                message.setText("Pressed: E");
+            }
+        });
+        F = findViewById(R.id.buttonF);
+        F.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                message.setText("Pressed: F");
             }
         });
     }

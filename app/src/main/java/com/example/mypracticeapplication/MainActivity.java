@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     Button linkCollector;
     List<LinkItem> listOfLinks = new ArrayList<LinkItem>();
     Button locator;
+    Button webService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,14 @@ public class MainActivity extends AppCompatActivity {
                 openLocatorActivity();
             }
         });
+
+        webService = findViewById(R.id.open_web_service);
+        webService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openWebServiceActivity();
+            }
+        });
     }
 
     private void openAboutMePage() {
@@ -73,5 +82,11 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, GPSActivity.class);
         startActivity(intent);
     }
+
+    private void openWebServiceActivity() {
+        Intent intent = new Intent(this, WebServiceActivity.class);
+        startActivity(intent);
+    }
+
 
 }

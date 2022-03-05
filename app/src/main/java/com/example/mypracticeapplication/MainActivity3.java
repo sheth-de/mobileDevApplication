@@ -56,9 +56,7 @@ public class MainActivity3 extends AppCompatActivity {
                 Toast.makeText(MainActivity3.this, "Delete an item", Toast.LENGTH_SHORT).show();
                 int position = viewHolder.getLayoutPosition();
                 itemList.remove(position);
-
                 rviewAdapter.notifyItemRemoved(position);
-
             }
         });
         itemTouchHelper.attachToRecyclerView(recyclerView);
@@ -83,7 +81,6 @@ public class MainActivity3 extends AppCompatActivity {
             outState.putString(KEY_OF_INSTANCE + i + "1", itemList.get(i).getUrl());
         }
         super.onSaveInstanceState(outState);
-
     }
 
     private void init(Bundle savedInstanceState) {
@@ -118,8 +115,6 @@ public class MainActivity3 extends AppCompatActivity {
     }
 
     private void createRecyclerView() {
-
-
         rLayoutManger = new LinearLayoutManager(this);
 
         recyclerView = findViewById(R.id.recyclerViewId);
@@ -136,13 +131,10 @@ public class MainActivity3 extends AppCompatActivity {
                 intent_new.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent_new);
             }
-
         };
         rviewAdapter.setOnItemClickListener(itemClickListener);
-
         recyclerView.setAdapter(rviewAdapter);
         recyclerView.setLayoutManager(rLayoutManger);
-
     }
 
 

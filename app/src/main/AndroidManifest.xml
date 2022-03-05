@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyPracticeApplication">
         <activity
+            android:name=".WebServiceActivity"
+            android:exported="false" />
+        <activity
             android:name=".GPSActivity"
             android:exported="false" />
         <activity

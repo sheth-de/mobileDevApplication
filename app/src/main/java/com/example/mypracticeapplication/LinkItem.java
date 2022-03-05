@@ -1,9 +1,5 @@
 package com.example.mypracticeapplication;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.util.Log;
-
 public class LinkItem {
     private final String name;
 

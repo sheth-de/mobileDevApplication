@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -36,7 +37,7 @@ public class WebServiceActivity extends AppCompatActivity {
     private ArrayList<String> image_list = new ArrayList<>();
     private ProgressBar progressBarAnime;
     private JSONObject jObject = new JSONObject();
-
+    private Handler jsonHandler = new Handler();
 
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
@@ -75,9 +76,10 @@ public class WebServiceActivity extends AppCompatActivity {
                     public void run() {
                         hideKeybaord(view);
                         sendRequest();
-                        runOnUiThread(new Runnable() {
+                        jsonHandler.post(new Runnable() {
                             @Override
                             public void run() {
+                                Log.i("Vheck thread","post");
                                 postRunUIChange();
                             }
                         });
@@ -100,6 +102,7 @@ public class WebServiceActivity extends AppCompatActivity {
         String link = link1 + anime + link2;
         try {
             URL url = new URL(link);
+            Log.i("Imp check", url.toString());
             String resp = NetworkUtil.httpResponse(url);
             Log.i("Imp check", resp);
             jObject = new JSONObject(resp);
@@ -185,6 +188,10 @@ public class WebServiceActivity extends AppCompatActivity {
             outState.putString(KEY_OF_INSTANCE + i + "2", image_list.get(i));
         }
         super.onSaveInstanceState(outState);
+    }
+
+    class differentThread extends Thread{
+
     }
 
 }

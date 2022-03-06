@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +35,7 @@ public class WebServiceActivity extends AppCompatActivity {
     private ArrayList<String> rating_list = new ArrayList<>();
     private ArrayList<String> image_list = new ArrayList<>();
     private ProgressBar progressBarAnime;
+    private JSONObject jObject = new JSONObject();
 
 
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
@@ -70,18 +69,21 @@ public class WebServiceActivity extends AppCompatActivity {
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                hideKeybaord(view);
-                PingWebServiceTask task = new PingWebServiceTask();
-                if (animeName.getText().toString().equals("")) {
-                    Toast.makeText(getApplication(), "The search box cannot be empty", Toast.LENGTH_SHORT).show();
-                } else {
-                    String anime = animeName.getText().toString();
-                    String link1 = "https://api.jikan.moe/v4/anime?q=";
-                    String link2 = "&sfw";
-                    String link = link1 + anime + link2;
-                    progressBarAnime.setVisibility(View.VISIBLE);
-                    task.execute(link);
-                }
+                progressBarAnime.setVisibility(View.VISIBLE);
+                Thread thread1 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideKeybaord(view);
+                        sendRequest();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRunUIChange();
+                            }
+                        });
+                    }
+                });
+                thread1.start();
             }
         });
     }
@@ -89,6 +91,88 @@ public class WebServiceActivity extends AppCompatActivity {
     private void hideKeybaord(View v) {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+    }
+
+    private void sendRequest() {
+        String anime = animeName.getText().toString();
+        String link1 = "https://api.jikan.moe/v4/anime?q=";
+        String link2 = "&sfw";
+        String link = link1 + anime + link2;
+        try {
+            URL url = new URL(link);
+            String resp = NetworkUtil.httpResponse(url);
+            Log.i("Imp check", resp);
+            jObject = new JSONObject(resp);
+//                            return jObject;
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "MalformedURLException");
+            e.printStackTrace();
+        } catch (ProtocolException e) {
+            Log.e(TAG, "ProtocolException");
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e(TAG, "IOException");
+            e.printStackTrace();
+        } catch (JSONException e) {
+            Log.e(TAG, "JSONException");
+            e.printStackTrace();
+        }
+    }
+
+    private void postRunUIChange() {
+
+        progressBarAnime.setVisibility(View.INVISIBLE);
+        JSONArray data = new JSONArray();
+        if (anime_name_list.size() > 0) {
+            anime_name_list.clear();
+        }
+        if (rating_list.size() > 0) {
+            rating_list.clear();
+        }
+        if (image_list.size() > 0) {
+            image_list.clear();
+        }
+        try {
+            data = jObject.getJSONArray("data");
+//                Log.i(TAG,String.valueOf(data.length()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+            buffer.setText("Something went wrong!");
+        }
+        if (data.length() <= 0) {
+            buffer.setText("No Results found for your search!");
+            anime_name_list.clear();
+            rating_list.clear();
+            image_list.clear();
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+            recyclerView.setLayoutManager(linearLayoutManager);
+            AnimeViewAdapter adapter = new AnimeViewAdapter(WebServiceActivity.this, rating_list, anime_name_list, image_list);
+            recyclerView.setAdapter(adapter);
+        } else {
+            buffer.setText("");
+            for (int i = 0; i < data.length(); i++) {
+                try {
+                    anime_name_list.add(data.getJSONObject(i).getString("title"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    rating_list.add(data.getJSONObject(i).getString("score"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    String imageUrlNew = data.getJSONObject(i).getJSONObject("images").getJSONObject("jpg").getString("image_url");
+                    image_list.add(imageUrlNew);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+            recyclerView.setLayoutManager(linearLayoutManager);
+            AnimeViewAdapter adapter = new AnimeViewAdapter(WebServiceActivity.this, rating_list, anime_name_list, image_list);
+            recyclerView.setAdapter(adapter);
+        }
     }
 
     @Override
@@ -102,99 +186,5 @@ public class WebServiceActivity extends AppCompatActivity {
         }
         super.onSaveInstanceState(outState);
     }
-
-    private class PingWebServiceTask extends AsyncTask<String, Integer, JSONObject> {
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            Log.i(TAG, "Making progress...");
-        }
-
-        @Override
-        protected JSONObject doInBackground(String... params) {
-            JSONObject jObject = new JSONObject();
-            try {
-                URL url = new URL(params[0]);
-                String resp = NetworkUtil.httpResponse(url);
-                Log.i("Imp check", resp);
-                jObject = new JSONObject(resp);
-                return jObject;
-
-            } catch (MalformedURLException e) {
-                Log.e(TAG, "MalformedURLException");
-                e.printStackTrace();
-            } catch (ProtocolException e) {
-                Log.e(TAG, "ProtocolException");
-                e.printStackTrace();
-            } catch (IOException e) {
-                Log.e(TAG, "IOException");
-                e.printStackTrace();
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException");
-                e.printStackTrace();
-            }
-
-            return jObject;
-        }
-
-
-        @Override
-        protected void onPostExecute(JSONObject jObject) {
-            super.onPostExecute(jObject);
-            progressBarAnime.setVisibility(View.INVISIBLE);
-            JSONArray data = new JSONArray();
-            if (anime_name_list.size() > 0) {
-                anime_name_list.clear();
-            }
-            if (rating_list.size() > 0) {
-                rating_list.clear();
-            }
-            if (image_list.size() > 0) {
-                image_list.clear();
-            }
-            try {
-                data = jObject.getJSONArray("data");
-//                Log.i(TAG,String.valueOf(data.length()));
-            } catch (JSONException e) {
-                e.printStackTrace();
-                buffer.setText("Something went wrong!");
-            }
-            if (data.length() <= 0) {
-                buffer.setText("No Results found for your search!");
-                anime_name_list.clear();
-                rating_list.clear();
-                image_list.clear();
-                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerView.setLayoutManager(linearLayoutManager);
-                AnimeViewAdapter adapter = new AnimeViewAdapter(WebServiceActivity.this, rating_list, anime_name_list, image_list);
-                recyclerView.setAdapter(adapter);
-            } else {
-                buffer.setText("");
-                for (int i = 0; i < data.length(); i++) {
-                    try {
-                        anime_name_list.add(data.getJSONObject(i).getString("title"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        rating_list.add(data.getJSONObject(i).getString("score"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        String imageUrlNew = data.getJSONObject(i).getJSONObject("images").getJSONObject("jpg").getString("image_url");
-                        image_list.add(imageUrlNew);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
-                recyclerView.setLayoutManager(linearLayoutManager);
-                AnimeViewAdapter adapter = new AnimeViewAdapter(WebServiceActivity.this, rating_list, anime_name_list, image_list);
-                recyclerView.setAdapter(adapter);
-            }
-        }
-    }
-
 
 }
